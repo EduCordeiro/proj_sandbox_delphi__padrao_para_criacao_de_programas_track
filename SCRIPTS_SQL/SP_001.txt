@@ -1,0 +1,64 @@
+CREATE PROCEDURE proj_sandbox_delphi__padrao_para_criacao_de_programas_track.SP_001()
+BEGIN
+
+
+  declare iResto integer;
+  declare iTotalDeInteracoesDeSelects integer;
+  declare iLimit integer;
+  declare iQtdeRegistros integer;
+  declare iTotalDeRegistrosDaTabela integer;
+  declare iContInteracoesDeSelects integer;
+
+  declare tblEntrada char(255);
+  declare tblAux char(255);
+
+  DECLARE cur_count CURSOR FOR select count(seq) from proj_sandbox_delphi__padrao_para_criacao_de_programas_track.tbl_entrada;
+
+  set tblEntrada = "";
+  set tblAux     = "";
+
+  OPEN cur_count;
+  FETCH cur_count INTO iTotalDeRegistrosDaTabela;
+  CLOSE cur_count;
+
+  set iLimit = 9000;
+
+  set iResto = (iTotalDeRegistrosDaTabela mod iLimit);
+
+  if iResto <> 0 then
+    set iTotalDeInteracoesDeSelects = (iTotalDeRegistrosDaTabela div iLimit + 1);
+  else
+    set iTotalDeInteracoesDeSelects = (iTotalDeRegistrosDaTabela div iLimit);
+  end if;
+
+-- set iContInteracoesDeSelects = 0;
+-- read_loop: LOOP
+
+--  call proj_sandbox_delphi__padrao_para_criacao_de_programas_track.SP_002();
+--  set iContInteracoesDeSelects = iContInteracoesDeSelects +1;
+
+--    INSERT INTO proj_sandbox_delphi__padrao_para_criacao_de_programas_track.debug_sql(interacoes, inte)
+--            VALUES (iContInteracoesDeSelects, iTotalDeInteracoesDeSelects);
+
+--   IF iContInteracoesDeSelects >= iTotalDeInteracoesDeSelects THEN
+--    LEAVE read_loop;
+--  END IF;
+
+-- END LOOP;
+
+  set iContInteracoesDeSelects = 0;
+  WHILE iContInteracoesDeSelects < iTotalDeInteracoesDeSelects DO
+  begin
+
+    set @regLidos = 0;
+
+    call proj_sandbox_delphi__padrao_para_criacao_de_programas_track.SP_002(@regLidos);
+    set iContInteracoesDeSelects = iContInteracoesDeSelects +1;
+
+    INSERT INTO proj_sandbox_delphi__padrao_para_criacao_de_programas_track.debug_sql(interacoes, inte, reg_lidos, timestamp)
+            VALUES (iContInteracoesDeSelects, iTotalDeInteracoesDeSelects, @regLidos, now());
+
+  end;
+  end while;
+
+END

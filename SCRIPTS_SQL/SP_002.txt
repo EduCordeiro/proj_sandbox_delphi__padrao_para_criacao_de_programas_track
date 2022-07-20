@@ -1,0 +1,69 @@
+CREATE PROCEDURE proj_sandbox_delphi__padrao_para_criacao_de_programas_track.SP_002(inout regLidos int)
+BEGIN
+  declare sSeq integer;
+  declare sTiporeg char(32);
+  declare sOperadora char(3);
+  declare sContrato char(9);
+  declare sCep char(8);
+  declare sArquivo char(100);
+  declare sTextoLinha varchar(959);
+  declare iTotalDeRegistros integer;
+
+  declare sOperadoraUpdate char(3);
+  declare sContratoUpdate char(9);
+
+  declare FLAG_EMAIL char(1);
+  declare FLAG_STATUS char(1);
+
+  DECLARE done_NET INT DEFAULT 0;
+
+  DECLARE cur CURSOR FOR select tipo_reg, arquivo, textolinha
+                           from proj_sandbox_delphi__padrao_para_criacao_de_programas_track.tbl_entrada limit 9000;
+
+  DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET done_NET = 1;
+
+  SET done_NET = 0;
+
+    OPEN cur;
+
+    REPEAT
+
+      FETCH cur INTO sTipoReg, sArquivo, sTextoLinha ;
+
+      IF NOT done_NET THEN
+      begin
+
+        if sTipoReg = "02" then
+        BEGIN
+          set sOperadoraUpdate = MID(sTextoLinha, 16, 3);
+          set sContratoUpdate  = "-1";
+        end;
+        end if;
+
+        if sTipoReg = "03" then
+        BEGIN
+          set sOperadoraUpdate = MID(sTextoLinha, 3, 3);
+          set sContratoUpdate  = MID(sTextoLinha, 10, 9);
+          set sCep             = MID(sTextoLinha, 380, 8);
+          set FLAG_EMAIL       = MID(sTextoLinha, 450, 1);
+
+          CALL SP_003(sCep, FLAG_STATUS);
+
+        end;
+        end if;
+
+        INSERT INTO proj_sandbox_delphi__padrao_para_criacao_de_programas_track._aux_(tipo_reg, OPERADORA, CONTRATO, CEP, FLAG_EMAIL, FLAG_STATUS, arquivo, textolinha)
+          VALUES (sTipoReg, sOperadoraUpdate, sContratoUpdate, sCep, FLAG_EMAIL, FLAG_STATUS, sArquivo, sTextoLinha);
+
+        set regLidos = regLidos + 1;
+
+      end;
+      end if;
+
+    UNTIL done_NET END REPEAT;
+
+    CLOSE cur;
+
+  delete from proj_sandbox_delphi__padrao_para_criacao_de_programas_track.tbl_entrada limit 9000;
+
+END

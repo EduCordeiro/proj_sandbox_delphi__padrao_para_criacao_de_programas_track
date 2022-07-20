@@ -1,0 +1,31 @@
+CREATE PROCEDURE proj_sandbox_delphi__padrao_para_criacao_de_programas_track.SP_003(in cep int, inout result int)
+BEGIN
+
+  declare iqtde int;
+  declare sCepIni char(8);
+
+  set result  = 0;
+  set iqtde   = 0;
+  set sCepIni = "";
+
+  SELECT count(cepini) into iqtde FROM plano_de_triagem.net_default
+      where cepini <= cep and cep <= cepfin;
+
+  if iqtde >= 1 then
+  begin
+
+--    set cep = LPAD(cep,8,"00000000");
+
+--    SELECT cepini into sCepIni FROM plano_de_triagem.net_default
+--      where cepini <= cep and cep <= cepfin;
+
+--    if (Length(Trim(sCepIni)) > 0) and (sCepIni IS not NULL) then
+      set result = 1;
+--    end if;
+
+  end;
+  end if;
+
+--  select result, cep;
+
+END
